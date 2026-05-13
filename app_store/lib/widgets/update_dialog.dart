@@ -54,7 +54,29 @@ class _UpdateDialogState extends State<UpdateDialog> {
                 Text(widget.changelog),
               ],
             ),
-      barrierDismissible: !widget.isForce,
+      actions: [
+        if (!widget.isForce && !_downloading)
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Later'),
+          ),
+        if (!_downloading)
+          ElevatedButton(
+            onPressed: () async {
+              setState(() => _downloading = true);
+              final updateProvider = Provider.of<UpdateProvider>(context, listen: false);
+              await updateProvider.downloadAndInstall(
+                context,
+                widget.apkUrl,
+                widget.fileHash,
+                widget.isForce,
+                (p) => setState(() => _progress = p),
+              );
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Update Now'),
+          ),
+      ],
     );
   }
 }
